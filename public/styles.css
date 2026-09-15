@@ -414,6 +414,18 @@ footer{
 }
 .status-pill{display:flex;align-items:center;gap:7px;}
 .status-pill .dot{width:6px;height:6px;border-radius:50%;background:var(--cyan);box-shadow:0 0 8px 1px var(--cyan);}
+.github-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.github-link svg {
+  width: 17px;
+  height: 17px;
+  fill: currentColor;
+  flex-shrink: 0;
+}
 /* ================= AI ASSISTANT ================= */
 
   #ai-assistant{
