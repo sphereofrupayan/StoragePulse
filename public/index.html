@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>StoragePulse — File System Storage Analyzer</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<!-- ============ PRELOADER ============ -->
+<div id="preloader">
+  <canvas id="preloaderCanvas"></canvas>
+  <div class="preloader-content">
+    <div class="preloader-logo">
+      <span class="logo-mark">
+        <i class="lc tl"></i><i class="lc tr"></i><i class="lc br"></i><i class="lc bl"></i>
+        <span class="logo-text">STORAGE<span class="accent">PULSE</span></span>
+      </span>
+    </div>
+    <div class="preloader-sub" id="preloaderSub">Charting the file system…</div>
+    <div class="preloader-bar"><div class="preloader-bar-fill" id="preloaderFill"></div></div>
+  </div>
+</div>
+
+<!-- ============ SITE CONTENT ============ -->
+<div id="siteContent">  
+
+  <nav>
+    <div class="logo">
+      <span class="logo-mark">
+        <i class="lc tl"></i><i class="lc tr"></i><i class="lc br"></i><i class="lc bl"></i>
+        <span class="logo-text">STORAGE<span class="accent">PULSE</span></span>
+      </span>
+    </div>
+    <div class="nav-links">
+      <a href="#overview">Overview</a>
+       <a href="#why">Why</a>
+      <a href="#breakdown">Breakdown</a>
+      <a href="#explorer">Explorer</a>
+      <a href="#about">About</a>
+      <a href="#analytics">Analytics</a>
+    </div>
+    <button class="nav-cta" onclick="triggerScan()">Run Scan</button>
+  </nav>
+
+  <header class="hero">
+    <canvas id="headerCanvas"></canvas>
+    <div class="hero-inner">
+      <div>
+        <div class="eyebrow">· Storage Cartography</div>
+        <h1>Every sector of<br>your disk, <span class="accent">mapped</span> live.</h1>
+        <p>StoragePulse walks your file system like a survey probe, charting capacity, fragmentation, and file-type distribution as one live signal from the deep — built for coursework in operating systems and storage internals.</p>
+        <div class="scan-bar">
+          <input type="text" id="scanPath" value="C:\Users\rupay\OneDrive\Desktop\Projects\StoragePulse" class="mono" placeholder="C:\path\to\scan">
+          <button onclick="triggerScan()">Scan Directory</button>
+        </div>
+        <div class="scan-hint" id="scanHint">Ready — run a scan to analyze the selected folder.</div>
+      </div>
+
+      <div class="gauge-wrap">
+        <div class="gauge">
+          <svg viewBox="0 0 220 220">
+            <circle cx="110" cy="110" r="96" stroke="#171b36" stroke-width="14" fill="none"/>
+            <circle id="gaugeArc" cx="110" cy="110" r="96" stroke="#4fe8d0" stroke-width="14" fill="none"
+              stroke-linecap="round" stroke-dasharray="603" stroke-dashoffset="603"/>
+          </svg>
+          <div class="gauge-label">
+  <div class="pct" id="gaugePct">--</div>
+  <div class="sub">SCANNED SIZE</div>
+</div>
+        </div>
+        <div class="gauge-meta">
+  <div>
+    <div class="val" id="diskTotal">--</div>
+    <div class="lbl">Drive</div>
+  </div>
+  <div>
+    <div class="val accent" id="diskUsed">--</div>
+    <div class="lbl">Folder</div>
+  </div>
+  <div>
+    <div class="val muted" id="diskFree">--</div>
+    <div class="lbl">Files</div>
+  </div>
+</div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+
+    <section class="block" id="overview">
+      <div class="block-head">
+        <div>
+          <h2><span class="num">01</span>System Overview</h2>
+          <p>Snapshot of the current index — refreshed on every scan.</p>
+        </div>
+      </div>
+      <div class="stats">
+  <div class="stat-card">
+    <div class="icon-row"><span class="tag">Scanned Size</span><span class="dot" style="background:var(--cyan)"></span></div>
+    <div class="value" id="scanSize">--</div>
+    <div class="delta">Selected folder</div>
+  </div>
+
+  <div class="stat-card">
+    <div class="icon-row"><span class="tag">Files</span><span class="dot" style="background:var(--amber)"></span></div>
+    <div class="value" id="fileCount">--</div>
+    <div class="delta">Files found in scan</div>
+  </div>
+
+  <div class="stat-card">
+    <div class="icon-row"><span class="tag">Folders</span><span class="dot" style="background:var(--violet)"></span></div>
+    <div class="value" id="folderCount">--</div>
+    <div class="delta">Folders found in scan</div>
+  </div>
+
+  <div class="stat-card">
+    <div class="icon-row"><span class="tag">Drive Used</span><span class="dot" style="background:var(--text-muted)"></span></div>
+    <div class="value" id="driveUsedPct">--</div>
+    <div class="delta">Current volume usage</div>
+  </div>
+</div>
+    </section>
+
+
+    
+
+    
+    <section class="block" id="breakdown">
+      <div class="block-head">
+        <div>
+          <h2><span class="num">02</span>Storage Breakdown</h2>
+          <p>Top-level files and directories sized proportionally by scanned storage.</p>
+        </div>
+      </div>
+      <div class="treemap" id="treemap"></div>
+      <div class="legend-row" id="treemapLegend"></div>
+    </section>
+
+    <section class="block" id="filetypes">
+      <div class="split">
+        <div class="panel">
+          <h3>File Type Distribution</h3>
+          <div class="donut-wrap">
+            <canvas id="donutCanvas" width="160" height="160"></canvas>
+            <div class="donut-list" id="donutList"></div>
+          </div>
+        </div>
+
+        <div class="panel" id="explorer">
+          <h3>Top-Level Explorer</h3>
+          <table>
+            <thead>
+              <tr>
+                <th onclick="sortTable('name')" id="th-name">Name</th>
+                <th onclick="sortTable('size')" id="th-size">Size</th>
+                <th onclick="sortTable('pct')" id="th-pct">Share</th>
+                <th onclick="sortTable('mod')" id="th-mod">Modified</th>
+              </tr>
+            </thead>
+            <tbody id="dirTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+        <section class="analytics-section" id="analytics">
+  <div class="analytics-header reveal">
+    <div class="eyebrow">· Storage Intelligence</div>
+    <h2>See the <span class="handwrite">whole picture.</span></h2>
+    <p>
+      A visual summary of your storage usage, file distribution,
+      and directory structure — all in one place.
+    </p>
+  </div>
+
+  <div class="analytics-card reveal">
+    <div class="analytics-top">
+      <div>
+        <span class="analytics-label">STORAGE OVERVIEW</span>
+        <h3>Disk utilization</h3>
+      </div>
+      <div class="analytics-status">
+        <span class="status-dot"></span>
+        LIVE SCAN DATA
+      </div>
+    </div>
+
+    <div class="analytics-chart-wrap">
+      <canvas id="storageGraph"></canvas>
+    </div>
+
+    <div class="analytics-summary">
+      <div class="analytics-metric">
+        <span>Total Storage</span>
+        <strong id="graphTotal">—</strong>
+      </div>
+
+      <div class="analytics-metric">
+        <span>Used</span>
+        <strong id="graphUsed">—</strong>
+      </div>
+
+      <div class="analytics-metric">
+        <span>Free</span>
+        <strong id="graphFree">—</strong>
+      </div>
+
+      <div class="analytics-metric">
+        <span>Files</span>
+        <strong id="graphFiles">—</strong>
+      </div>
+    </div>
+  </div>
+</section>
+<section class="why-section" id="why">
+  <div class="why-header reveal">
+    <div class="eyebrow">· Why StoragePulse</div>
+    <h2>Understand your storage,<br><span class="handwrite">not just your numbers.</span></h2>
+    <p>
+      A visual way to explore how your disk is actually being used —
+      from individual files to the bigger structure of your file system.
+    </p>
+  </div>
+
+  <div class="why-grid">
+    <div class="why-card reveal">
+      <div class="why-number">01</div>
+      <div class="why-icon">⌁</div>
+      <h3>See where space goes</h3>
+      <p>
+        Quickly identify the folders and files consuming the most storage
+        instead of searching through directories manually.
+      </p>
+      <span class="why-line"></span>
+    </div>
+
+    <div class="why-card reveal">
+      <div class="why-number">02</div>
+      <div class="why-icon">◌</div>
+      <h3>Visualize your disk</h3>
+      <p>
+        Turn raw file-system data into a visual storage map that makes
+        capacity and distribution easier to understand.
+      </p>
+      <span class="why-line"></span>
+    </div>
+
+    <div class="why-card reveal">
+      <div class="why-number">03</div>
+      <div class="why-icon">✦</div>
+      <h3>Learn the internals</h3>
+      <p>
+        Explore storage concepts through a practical operating-systems
+        project built around real directory traversal and analysis.
+      </p>
+      <span class="why-line"></span>
+    </div>
+  </div>
+
+  <div class="why-quote reveal">
+    <span class="quote-mark">“</span>
+    <p id="whyTypewriter">
+      Your file system is a map. StoragePulse helps you read it.
+    </p>
+    <br>
+    <span class="quote-label">STORAGEPULSE / SYSTEM NOTE</span>
+  </div>
+</section>
+  </main>
+
+  <footer id="about">
+    <canvas id="footerCanvas"></canvas>
+    <div class="footer-inner">
+      <div class="footer-top">
+        <div class="footer-brand">
+          <div class="logo">
+            <span class="logo-mark">
+              <i class="lc tl"></i><i class="lc tr"></i><i class="lc br"></i><i class="lc bl"></i>
+              <span class="logo-text">STORAGE<span class="accent">PULSE</span></span>
+            </span>
+          </div>
+          <p>A file system storage analyzer and disk usage visualizer, charted like a star map — built as an operating systems coursework project.</p>
+        </div>
+        <div class="footer-col">
+          <h4>Project</h4>
+          <a href="#overview">Overview</a>
+          <a href="#breakdown">Storage breakdown</a>
+          <a href="#explorer">Directory explorer</a>
+        </div>
+        <div class="footer-col">
+          <h4>Internals</h4>
+          <a href="#">Traversal algorithm</a>
+          <a href="#">Indexing strategy</a>
+          <a href="#">Fragmentation model</a>
+        </div>
+        <div class="footer-col">
+          <h4>Course</h4>
+          <a href="#">Operating Systems</a>
+          <a href="#">Documentation</a>
+          <a href="#">Source repository</a>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <div>StoragePulse — File system analyzer</div>
+        <div class="status-pill"><span class="dot"></span>Scanner idle · watching 1 volume</div>
+      </div>
+    </div>
+  </footer>
+
+</div>
+<div id="ai-assistant">
+  <button id="ai-button" onclick="toggleAI()" aria-label="Open StoragePulse AI"></button>
+ 
+  <div id="ai-panel">
+    <div class="ai-header">
+      <div>
+        <div class="ai-title">StoragePulse AI</div>
+        <div class="ai-status"><span></span>Storage assistant</div>
+      </div>
+      <button class="ai-close" onclick="toggleAI()">×</button>
+    </div>
+ 
+    <div id="ai-messages" class="ai-messages">
+      <div class="ai-message ai-bot">
+        Hi! I'm your StoragePulse assistant. Ask me about your storage, files, folders, or disk usage.
+      </div>
+    </div>
+ 
+    <div class="ai-suggestions">
+      <button onclick="askAI('Which folder is using the most storage?')">Largest folder</button>
+      <button onclick="askAI('What is the total storage of my drive?')">Drive storage</button>
+      <button onclick="askAI('How many files and folders were scanned?')">Scan summary</button>
+    </div>
+ 
+    <div class="ai-input">
+      <input id="ai-input" type="text" placeholder="Ask about your storage..." onkeydown="handleAIKey(event)">
+      <button onclick="sendAIMessage()">→</button>
+    </div>
+  </div>
+</div>
+<script src="script.js"></script>
+</body>
+</html>
