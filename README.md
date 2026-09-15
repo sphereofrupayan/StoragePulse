@@ -78,7 +78,8 @@ and completion**.
 
   Nagendra                            Assisted with testing, UI feedback
                                       and documentation support
-  -----------------------------------------------------------------------
+  ----------------------------------- -----------------------------------
+
 
 ## Project Purpose
 
