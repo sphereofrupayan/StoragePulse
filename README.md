@@ -68,15 +68,15 @@ and completion**.
   -----------------------------------------------------------------------
   Member                              Contribution
   ----------------------------------- -----------------------------------
-  **Rupayan Chattaraj**               **Project Lead --- End-to-end
+  Rupayan Chattaraj                   Project Lead , End-to-end
                                       development, architecture, backend,
                                       frontend, integration, testing and
-                                      final implementation**
+                                      final implementation with AI assistant.
 
-  Himashu                             Assisted with testing, debugging
-                                      and project feedback
+  Himanshu                            Assisted with testing, debugging
+                                      ,Storage Visualization.
 
-  Nagendra                            Assisted with testing, UI feedback
+  Nagendra                            Assisted with testing, dashboard, UI feedback
                                       and documentation support
   ----------------------------------- -----------------------------------
 
